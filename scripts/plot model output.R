@@ -8,6 +8,8 @@ cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E
 # set theme
 theme_set(theme_bw())
 
+## projections -------------
+
 # load files
 
 file_names <- list.files("./data/cmip6_projections")
@@ -67,3 +69,32 @@ ggplot(filter(cmip6_plot, variable == "temp"), aes(`day of year`, value, color =
   ylab("temp")
 
 ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')
+
+## hindcasts ----------------
+
+# load and plot temp
+
+temp_hind <- read.csv("./data/hindcasts/temp_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+
+names(temp_hind) <- c("year", "month", "temp")
+
+ggplot(temp_hind, aes(month, temp)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~year) +
+  scale_x_continuous(breaks = 1:12)
+
+ggsave("./figs/temp_hindcasts.png", width = 7.5, height = 6, units = 'in')
+
+# load and plot pH
+pH_hind <- read.csv("./data/hindcasts/pH_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+
+names(pH_hind) <- c("year", "month", "pH")
+
+ggplot(pH_hind, aes(month, pH)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~year) +
+  scale_x_continuous(breaks = 1:12)
+
+ggsave("./figs/pH_hindcasts.png", width = 7.5, height = 6, units = 'in')

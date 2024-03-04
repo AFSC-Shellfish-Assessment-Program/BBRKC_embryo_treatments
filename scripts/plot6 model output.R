@@ -1,0 +1,69 @@
+# plot hindcasts and projections of pH and temp from Darren P.
+
+library(tidyverse)
+
+# set palette
+cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# set theme
+theme_set(theme_bw())
+
+# load files
+
+file_names <- list.files("./data/cmip6_projections")
+
+# set up vectors of variables, SSPs, and time domains
+
+variables <- c(rep("pH", 4), rep("temp", 4))
+SSPs <- rep(c("ssp126", "ssp126", "ssp585", "ssp585"), 2)
+time <- c(rep(c("2050-2059", "2090-2099"), 4))
+
+
+# vector of columnames (day and model identity)
+col_names <- c("day of year", "CESM", "GFDL", "MIROC")
+
+# set up combined df to plot
+
+cmip6_plot <- data.frame()
+
+# loop through files and join!
+
+for(i in 1:length(file_names)){
+
+  path <- paste("./data/cmip6_projections/", file_names[i], sep = "")
+  temp <- read.csv(path, header = F)
+  
+  names(temp) <- col_names
+  
+  temp$variable <- variables[i]
+  temp$SSP <- SSPs[i]
+  temp$time <- time[i]
+  
+  # temp <- temp %>%
+  #   pivot_longer(cols = c(-`day of year`, -variable, -SSP, -time))
+  
+  cmip6_plot <- rbind(cmip6_plot, temp)  
+
+}
+
+cmip6_plot <- cmip6_plot %>%
+  pivot_longer(cols = c(-`day of year`, -variable, -SSP, -time), names_to = "model")
+
+# pH plot
+ggplot(filter(cmip6_plot, variable == "pH"), aes(`day of year`, value, color = model)) +
+  geom_line() +
+  facet_grid(time ~ SSP) +
+  scale_color_manual(values = cb[c(2,4,6)]) +
+  ylab("pH")
+
+ggsave("./figs/ph_projections.png", width = 6, height = 4, units = 'in')
+
+
+# temp plot
+ggplot(filter(cmip6_plot, variable == "temp"), aes(`day of year`, value, color = model)) +
+  geom_line() +
+  facet_grid(time ~ SSP) +
+  scale_color_manual(values = cb[c(2,4,6)]) +
+  ylab("temp")
+
+ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')

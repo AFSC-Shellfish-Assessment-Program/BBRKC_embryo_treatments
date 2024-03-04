@@ -12,7 +12,7 @@ theme_set(theme_bw())
 
 # load files
 
-file_names <- list.files("./data/cmip6_projections")
+file_names <- list.files("./output/cmip6_projections")
 
 # set up vectors of variables, SSPs, and time domains
 
@@ -26,13 +26,13 @@ col_names <- c("day of year", "CESM", "GFDL", "MIROC")
 
 # set up combined df to plot
 
-cmip6_plot <- data.frame()
+cmip6_plot <- output.frame()
 
 # loop through files and join!
 
 for(i in 1:length(file_names)){
 
-  path <- paste("./data/cmip6_projections/", file_names[i], sep = "")
+  path <- paste("./output/cmip6_projections/", file_names[i], sep = "")
   temp <- read.csv(path, header = F)
   
   names(temp) <- col_names
@@ -74,7 +74,7 @@ ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')
 
 # load and plot temp
 
-temp_hind <- read.csv("./data/hindcasts/temp_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+temp_hind <- read.csv("./output/hindcasts/temp_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
 
 names(temp_hind) <- c("year", "month", "temp")
 
@@ -87,7 +87,7 @@ ggplot(temp_hind, aes(month, temp)) +
 ggsave("./figs/temp_hindcasts.png", width = 7.5, height = 6, units = 'in')
 
 # load and plot pH
-pH_hind <- read.csv("./data/hindcasts/pH_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+pH_hind <- read.csv("./output/hindcasts/pH_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
 
 names(pH_hind) <- c("year", "month", "pH")
 

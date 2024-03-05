@@ -133,3 +133,38 @@ ggplot(pH_hind, aes(month, pH)) +
   scale_x_continuous(breaks = 1:12)
 
 ggsave("./figs/pH_hindcasts.png", width = 7.5, height = 6, units = 'in')
+
+## compare monthly pH distributions for hindcast and projections -----
+
+pH_project <- cmip6_plot %>%
+  filter(variable == "pH",
+         time == "2050-2059") %>%
+  mutate(doy = round(`day of year`)) %>% 
+  group_by(model, doy) %>%
+  summarise(pH = mean(value)) %>%
+  mutate(doy = ymd("2050-01-01") + days(doy - 1),
+         month = month(doy, label = T),
+         group = "CMIP6 2050-59") %>%
+  select(pH, month, group)
+
+# drop 'model' manually
+pH_project <- pH_project[,2:4]
+
+
+pH_hind <- pH_hind %>%
+  mutate(group = "hindcast",
+         month = month(month, label = T)) %>%
+  select(pH, month, group)
+  
+# combine and plot
+pH_pdfs <- rbind(pH_project, pH_hind)
+
+
+ggplot(pH_pdfs, aes(pH, fill = group)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(2,6)]) +
+  xlim(7.6, 8.1) +
+  ggtitle("CMIP6 values are SSP126 - SSP585 means")
+
+ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 9, height = 6, units = 'in')

@@ -159,12 +159,21 @@ pH_hind <- pH_hind %>%
 # combine and plot
 pH_pdfs <- rbind(pH_project, pH_hind)
 
+# and get median values by group, month to plot
+pH_medians <- pH_pdfs %>%
+  group_by(group, month) %>%
+  summarise(median = median(pH))
+
+pH_pdfs <- left_join(pH_pdfs, pH_medians)
 
 ggplot(pH_pdfs, aes(pH, fill = group)) +
   geom_density(alpha = 0.3, lty = 0) +
   facet_wrap(~month, scales = "free_y") +
   scale_fill_manual(values = cb[c(2,6)]) +
-  xlim(7.6, 8.1) +
-  ggtitle("CMIP6 values are SSP126, SSP585 means")
+  xlim(7.65, 8.07) +
+  ggtitle("CMIP6 values are SSP126, SSP585 means: dashed lines = medians") +
+  geom_vline(aes(xintercept = median, color = group), lty = 2) +
+  scale_color_manual(values = cb[c(2,6)])
 
-ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 9, height = 6, units = 'in')
+
+ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')

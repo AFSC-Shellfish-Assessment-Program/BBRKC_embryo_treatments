@@ -70,6 +70,23 @@ ggplot(filter(cmip6_plot, variable == "temp"), aes(`day of year`, value, color =
 
 ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')
 
+
+# compare SSPs for model/time period comparisons
+cmip6_temp <- cmip6_plot %>%
+  filter(variable == "temp") %>%
+  select(-variable) %>%
+  pivot_wider(names_from = SSP, values_from = value) 
+
+# plot
+ggplot(cmip6_temp, aes(ssp126, ssp585, color = model)) +
+  geom_point() +
+  facet_wrap(~time) +
+  scale_color_manual(values = cb[c(2,4,6)]) +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title = "Black line is 1:1")
+
+ggsave("./figs/temp_ssp126_vs_ssp585.png", width = 8, height = 4, units = 'in')
+
 ## hindcasts ----------------
 
 # load and plot temp

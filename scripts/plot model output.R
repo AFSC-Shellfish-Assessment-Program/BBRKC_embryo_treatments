@@ -177,3 +177,46 @@ ggplot(pH_pdfs, aes(pH, fill = group)) +
 
 
 ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+
+## compare monthly temp distributions for hindcast and projections -----
+
+temp_project <- cmip6_plot %>%
+  filter(variable == "temp",
+         time == "2050-2059") %>%
+  mutate(doy = round(`day of year`)) %>% 
+  group_by(model, doy) %>%
+  summarise(temp = mean(value)) %>%
+  mutate(doy = ymd("2050-01-01") + days(doy - 1),
+         month = month(doy, label = T),
+         group = "CMIP6 2050-59") %>%
+  select(temp, month, group)
+
+# drop 'model' manually
+temp_project <- temp_project[,2:4]
+
+temp_hind <- temp_hind %>%
+  mutate(group = "hindcast",
+         month = month(month, label = T)) %>%
+  select(temp, month, group)
+
+# combine and plot
+temp_pdfs <- rbind(temp_project, temp_hind)
+
+# and get median values by group, month to plot
+temp_medians <- temp_pdfs %>%
+  group_by(group, month) %>%
+  summarise(median = median(temp))
+
+temp_pdfs <- left_join(temp_pdfs, temp_medians)
+
+ggplot(temp_pdfs, aes(temp, fill = group)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(2,6)]) +
+  xlim(-1, 8) +
+  ggtitle("CMIP6 values = SSP126, SSP585 means; dashed lines = medians") +
+  geom_vline(aes(xintercept = median, color = group), lty = 2) +
+  scale_color_manual(values = cb[c(2,6)])
+
+
+ggsave("./figs/temp_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')

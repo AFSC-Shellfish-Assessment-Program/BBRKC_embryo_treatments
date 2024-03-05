@@ -165,6 +165,6 @@ ggplot(pH_pdfs, aes(pH, fill = group)) +
   facet_wrap(~month, scales = "free_y") +
   scale_fill_manual(values = cb[c(2,6)]) +
   xlim(7.6, 8.1) +
-  ggtitle("CMIP6 values are SSP126 - SSP585 means")
+  ggtitle("CMIP6 values are SSP126, SSP585 means")
 
 ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 9, height = 6, units = 'in')

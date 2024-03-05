@@ -171,7 +171,7 @@ ggplot(pH_pdfs, aes(pH, fill = group)) +
   facet_wrap(~month, scales = "free_y") +
   scale_fill_manual(values = cb[c(2,6)]) +
   xlim(7.65, 8.07) +
-  ggtitle("CMIP6 values are SSP126, SSP585 means: dashed lines = medians") +
+  ggtitle("CMIP6 values = SSP126, SSP585 means; dashed lines = medians") +
   geom_vline(aes(xintercept = median, color = group), lty = 2) +
   scale_color_manual(values = cb[c(2,6)])
 

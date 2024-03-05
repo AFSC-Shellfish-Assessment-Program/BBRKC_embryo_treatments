@@ -26,7 +26,7 @@ col_names <- c("day of year", "CESM", "GFDL", "MIROC")
 
 # set up combined df to plot
 
-cmip6_plot <- output.frame()
+cmip6_plot <- data.frame()
 
 # loop through files and join!
 
@@ -86,6 +86,24 @@ ggplot(cmip6_temp, aes(ssp126, ssp585, color = model)) +
   labs(title = "Black line is 1:1")
 
 ggsave("./figs/temp_ssp126_vs_ssp585.png", width = 8, height = 4, units = 'in')
+
+
+# compare time periods for model/SSP comparisons
+cmip6_temp <- cmip6_plot %>%
+  filter(variable == "temp") %>%
+  select(-variable) %>%
+  pivot_wider(names_from = time, values_from = value) 
+
+# plot
+ggplot(cmip6_temp, aes(`2050-2059`, `2090-2099`, color = model)) +
+  geom_point() +
+  facet_wrap(~SSP) +
+  scale_color_manual(values = cb[c(2,4,6)]) +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title = "Black line is 1:1")
+
+ggsave("./figs/temp_ssp126_vs_ssp585.png", width = 8, height = 4, units = 'in')
+
 
 ## hindcasts ----------------
 

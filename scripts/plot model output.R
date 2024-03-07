@@ -185,6 +185,39 @@ ggplot(pH_pdfs, aes(pH, fill = group)) +
 
 ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
 
+# plot a version with individual SSPs compared with hindcast
+pH_project_individual_SSPs <- cmip6_plot %>%
+  filter(variable == "pH",
+         time == "2050-2059") %>%
+  mutate(doy = round(`day of year`)) %>% 
+  mutate(doy = ymd("2050-01-01") + days(doy - 1),
+         month = month(doy, label = T)) %>%
+  rename(group = SSP,
+         pH = value) %>%
+  select(pH, month, group)
+
+
+# combine and plot
+pH_ssp_pdfs <- rbind(pH_project_individual_SSPs, pH_hind)
+
+# and get median values by group, month to plot
+pH_ssp_medians <- pH_ssp_pdfs %>%
+  group_by(group, month) %>%
+  summarise(median = median(pH))
+
+pH_ssp_pdfs <- left_join(pH_ssp_pdfs, pH_ssp_medians)
+
+ggplot(pH_ssp_pdfs, aes(pH, fill = group)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(2,4,6)]) +
+  xlim(7.65, 8.07) +
+  ggtitle("dashed lines = medians") +
+  geom_vline(aes(xintercept = median, color = group), lty = 2) +
+  scale_color_manual(values = cb[c(2,4,6)])
+
+ggsave("./figs/pH_hindcast_projection_monthly_pdfs_individual_SSPs.png", width = 10, height = 6, units = 'in')
+
 ## now, advance the hindcast pH climatology by the difference in median between hindcast and projections
 
 # first, get difference in medians  
@@ -251,6 +284,40 @@ ggplot(temp_pdfs, aes(temp, fill = group)) +
 
 
 ggsave("./figs/temp_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+
+# plot a version with individual SSPs compared with hindcast
+temp_project_individual_SSPs <- cmip6_plot %>%
+  filter(variable == "temp",
+         time == "2050-2059") %>%
+  mutate(doy = round(`day of year`)) %>% 
+  mutate(doy = ymd("2050-01-01") + days(doy - 1),
+         month = month(doy, label = T)) %>%
+  rename(group = SSP,
+         temp = value) %>%
+  select(temp, month, group)
+
+
+# combine and plot
+temp_ssp_pdfs <- rbind(temp_project_individual_SSPs, temp_hind)
+
+# and get median values by group, month to plot
+temp_ssp_medians <- temp_ssp_pdfs %>%
+  group_by(group, month) %>%
+  summarise(median = median(temp))
+
+temp_ssp_pdfs <- left_join(temp_ssp_pdfs, temp_ssp_medians)
+
+ggplot(temp_ssp_pdfs, aes(temp, fill = group)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(2,4,6)]) +
+  xlim(-1, 8.5) +
+  ggtitle("dashed lines = medians") +
+  geom_vline(aes(xintercept = median, color = group), lty = 2) +
+  scale_color_manual(values = cb[c(2,4,6)])
+
+ggsave("./figs/temp_hindcast_projection_monthly_pdfs_individual_SSPs.png", width = 10, height = 6, units = 'in')
+
 
 ## now, advance the hindcast temp climatology by the difference in median between hindcast and projections
 

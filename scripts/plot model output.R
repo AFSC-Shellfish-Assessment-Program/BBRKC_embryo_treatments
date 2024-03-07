@@ -164,6 +164,13 @@ pH_medians <- pH_pdfs %>%
   group_by(group, month) %>%
   summarise(median = median(pH))
 
+# save monthly hindcast medians for experimental setup
+pH_hindcast_medians <- pH_medians %>%
+  filter(group == "hindcast") 
+
+write.csv(pH_hindcast_medians[,2:3], "./summaries/pH_hindcast_monthly_medians.csv", row.names = F)
+
+
 pH_pdfs <- left_join(pH_pdfs, pH_medians)
 
 ggplot(pH_pdfs, aes(pH, fill = group)) +
@@ -177,6 +184,24 @@ ggplot(pH_pdfs, aes(pH, fill = group)) +
 
 
 ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+
+## now, advance the hindcast pH climatology by the difference in median between hindcast and projections
+
+# first, get difference in medians  
+pH_median_diff <- pH_medians %>%
+  pivot_wider(names_from = group, values_from = median) %>%
+  mutate(median_diff = `CMIP6 2050-59` - hindcast)
+
+# now, project entire hindcast climatology by this amount
+pH_projected_10_percentile <- pH_pdfs %>%
+  filter(group == "hindcast") %>%
+  left_join(., pH_median_diff) %>%
+  mutate(pH_projected = pH + median_diff) %>%
+  group_by(month) %>%
+  summarise(tenth_percentile = quantile(pH_projected, 0.1))
+
+# save for setting up experimental conditions  
+write.csv(pH_projected_10_percentile, "./summaries/pH_projected_10th_percentile_2050-59_SSP126_SSP585_mean.csv", row.names = F)
 
 ## compare monthly temp distributions for hindcast and projections -----
 
@@ -207,6 +232,12 @@ temp_medians <- temp_pdfs %>%
   group_by(group, month) %>%
   summarise(median = median(temp))
 
+# save monthly hindcast medians for experimental setup
+temp_hindcast_medians <- temp_medians %>%
+  filter(group == "hindcast") 
+
+write.csv(temp_hindcast_medians[,2:3], "./summaries/temp_hindcast_monthly_medians.csv", row.names = F)
+
 temp_pdfs <- left_join(temp_pdfs, temp_medians)
 
 ggplot(temp_pdfs, aes(temp, fill = group)) +
@@ -220,3 +251,21 @@ ggplot(temp_pdfs, aes(temp, fill = group)) +
 
 
 ggsave("./figs/temp_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+
+## now, advance the hindcast temp climatology by the difference in median between hindcast and projections
+
+# first, get difference in medians  
+temp_median_diff <- temp_medians %>%
+  pivot_wider(names_from = group, values_from = median) %>%
+  mutate(median_diff = `CMIP6 2050-59` - hindcast)
+
+# now, project entire hindcast climatology by this amount
+temp_projected_90_percentile <- temp_pdfs %>%
+  filter(group == "hindcast") %>%
+  left_join(., temp_median_diff) %>%
+  mutate(temp_projected = temp + median_diff) %>%
+  group_by(month) %>%
+  summarise(tenth_percentile = quantile(temp_projected, 0.9))
+
+# save for setting up experimental conditions  
+write.csv(temp_projected_90_percentile, "./summaries/temp_projected_90th_percentile_2050-59_SSP126_SSP585_mean.csv", row.names = F)

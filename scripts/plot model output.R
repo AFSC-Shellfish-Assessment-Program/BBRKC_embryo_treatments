@@ -265,7 +265,7 @@ temp_projected_90_percentile <- temp_pdfs %>%
   left_join(., temp_median_diff) %>%
   mutate(temp_projected = temp + median_diff) %>%
   group_by(month) %>%
-  summarise(tenth_percentile = quantile(temp_projected, 0.9))
+  summarise(ninetieth_percentile = quantile(temp_projected, 0.9))
 
 # save for setting up experimental conditions  
 write.csv(temp_projected_90_percentile, "./summaries/temp_projected_90th_percentile_2050-59_SSP126_SSP585_mean.csv", row.names = F)

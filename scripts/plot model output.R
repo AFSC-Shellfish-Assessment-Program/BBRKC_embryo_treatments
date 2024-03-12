@@ -1,4 +1,5 @@
 # plot hindcasts and projections of pH and temp from Darren P.
+# "temp" throughout refers to bottom temp!
 
 library(tidyverse)
 
@@ -15,10 +16,9 @@ theme_set(theme_bw())
 file_names <- list.files("./output/cmip6_projections")
 
 # set up vectors of variables, SSPs, and time domains
-
-variables <- c(rep("pH", 4), rep("temp", 4))
-SSPs <- rep(c("ssp126", "ssp126", "ssp585", "ssp585"), 2)
-time <- c(rep(c("2050-2059", "2090-2099"), 4))
+variables <- c(rep("pH", 4), rep("temp", 4), rep("sst", 4))
+SSPs <- rep(c("ssp126", "ssp126", "ssp585", "ssp585"), 3)
+time <- c(rep(c("2050-2059", "2090-2099"), 6))
 
 
 # vector of columnames (day and model identity)
@@ -69,6 +69,16 @@ ggplot(filter(cmip6_plot, variable == "temp"), aes(`day of year`, value, color =
   ylab("temp")
 
 ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')
+
+
+# sst plot
+ggplot(filter(cmip6_plot, variable == "sst"), aes(`day of year`, value, color = model)) +
+  geom_line() +
+  facet_grid(time ~ SSP) +
+  scale_color_manual(values = cb[c(2,4,6)]) +
+  ylab("sst")
+
+ggsave("./figs/sst_projections.png", width = 6, height = 4, units = 'in')
 
 
 # compare SSPs for model/time period comparisons
@@ -133,6 +143,19 @@ ggplot(pH_hind, aes(month, pH)) +
   scale_x_continuous(breaks = 1:12)
 
 ggsave("./figs/pH_hindcasts.png", width = 7.5, height = 6, units = 'in')
+
+# load and plot sst
+sst_hind <- read.csv("./output/hindcasts/temp_surface5m_week_clim_hind_2013-2022_BB.csv", header = F)
+
+names(sst_hind) <- c("day", "sst")
+
+ggplot(sst_hind, aes(day, sst)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~year) +
+  scale_x_continuous(breaks = 1:12)
+
+ggsave("./figs/sst_hindcasts.png", width = 7.5, height = 6, units = 'in')
 
 ## compare monthly pH distributions for hindcast and projections -----
 

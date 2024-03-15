@@ -212,12 +212,12 @@ ggplot(filter(bottom_temp_pdfs, time == "2050-2059"), aes(value, fill = model)) 
 
 ggsave("./figs/bottom_temp_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')
 
-# get medians and 10th quantiles
+# get medians and 90th quantiles
 bottom_temp_stats <- bottom_temp_pdfs %>%
   filter(time == "2050-2059") %>%
   group_by(month, model) %>%
   summarise(median_pH = median(value),
-            tenth_quantile = quantile(value, 0.1))
+            ninetieth_quantile = quantile(value, 0.9))
 
 # save
 write.csv(bottom_temp_stats, "./summaries/bottom_temp_median_10th_quantile_hindcast_ensemble_2050-2059_projection.csv",

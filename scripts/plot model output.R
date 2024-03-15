@@ -16,13 +16,13 @@ theme_set(theme_bw())
 file_names <- list.files("./output/cmip6_projections")
 
 # set up vectors of variables, SSPs, and time domains
-variables <- c(rep("pH", 4), rep("temp", 4), rep("sst", 4))
+variables <- c(rep("bottom_pH", 4), rep("bottom_temp", 4), rep("sst", 4))
 SSPs <- rep(c("ssp126", "ssp126", "ssp585", "ssp585"), 3)
 time <- c(rep(c("2050-2059", "2090-2099"), 6))
 
 
 # vector of columnames (day and model identity)
-col_names <- c("day of year", "CESM", "GFDL", "MIROC")
+col_names <- c("year", "month", "day", "CESM", "GFDL", "MIROC")
 
 # set up combined df to plot
 
@@ -49,313 +49,221 @@ for(i in 1:length(file_names)){
 }
 
 cmip6_plot <- cmip6_plot %>%
-  pivot_longer(cols = c(-`day of year`, -variable, -SSP, -time), names_to = "model")
-
-# pH plot
-ggplot(filter(cmip6_plot, variable == "pH"), aes(`day of year`, value, color = model)) +
-  geom_line() +
-  facet_grid(time ~ SSP) +
-  scale_color_manual(values = cb[c(2,4,6)]) +
-  ylab("pH")
-
-ggsave("./figs/ph_projections.png", width = 6, height = 4, units = 'in')
-
-
-# temp plot
-ggplot(filter(cmip6_plot, variable == "temp"), aes(`day of year`, value, color = model)) +
-  geom_line() +
-  facet_grid(time ~ SSP) +
-  scale_color_manual(values = cb[c(2,4,6)]) +
-  ylab("temp")
-
-ggsave("./figs/temp_projections.png", width = 6, height = 4, units = 'in')
-
-
-# sst plot
-ggplot(filter(cmip6_plot, variable == "sst"), aes(`day of year`, value, color = model)) +
-  geom_line() +
-  facet_grid(time ~ SSP) +
-  scale_color_manual(values = cb[c(2,4,6)]) +
-  ylab("sst")
-
-ggsave("./figs/sst_projections.png", width = 6, height = 4, units = 'in')
-
-
-# compare SSPs for model/time period comparisons
-cmip6_temp <- cmip6_plot %>%
-  filter(variable == "temp") %>%
-  select(-variable) %>%
-  pivot_wider(names_from = SSP, values_from = value) 
-
-# plot
-ggplot(cmip6_temp, aes(ssp126, ssp585, color = model)) +
-  geom_point() +
-  facet_wrap(~time) +
-  scale_color_manual(values = cb[c(2,4,6)]) +
-  geom_abline(intercept = 0, slope = 1) +
-  labs(title = "Black line is 1:1")
-
-ggsave("./figs/temp_ssp126_vs_ssp585.png", width = 8, height = 4, units = 'in')
-
-
-# compare time periods for model/SSP comparisons
-cmip6_temp <- cmip6_plot %>%
-  filter(variable == "temp") %>%
-  select(-variable) %>%
-  pivot_wider(names_from = time, values_from = value) 
-
-# plot
-ggplot(cmip6_temp, aes(`2050-2059`, `2090-2099`, color = model)) +
-  geom_point() +
-  facet_wrap(~SSP) +
-  scale_color_manual(values = cb[c(2,4,6)]) +
-  geom_abline(intercept = 0, slope = 1) +
-  labs(title = "Black line is 1:1")
-
-ggsave("./figs/temp_ssp126_vs_ssp585.png", width = 8, height = 4, units = 'in')
+  pivot_longer(cols = c(-year, -month, -day, -variable, -SSP, -time), names_to = "model")
 
 
 ## hindcasts ----------------
 
-# load and plot temp
+# load temp
 
-temp_hind <- read.csv("./output/hindcasts/temp_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+bottom_temp_hind <- read.csv("./output/hindcasts/temp_bottom5m_week_hind_2013-2022_interp_BB.csv", header = F)
 
-names(temp_hind) <- c("year", "month", "temp")
+names(bottom_temp_hind) <- c("year", "month", "day", "bottom_temp")
 
-ggplot(temp_hind, aes(month, temp)) +
-  geom_line() +
-  geom_point() +
-  facet_wrap(~year) +
-  scale_x_continuous(breaks = 1:12)
+# load pH
+bottom_pH_hind <- read.csv("./output/hindcasts/pH_bottom5m_week_hind_2013-2022_interp_BB.csv", header = F)
 
-ggsave("./figs/temp_hindcasts.png", width = 7.5, height = 6, units = 'in')
+names(bottom_pH_hind) <- c("year", "month", "day", "bottom_pH")
 
-# load and plot pH
-pH_hind <- read.csv("./output/hindcasts/pH_bottom5m_mon_hind_2013-2022_BB.csv", header = F)
+# load sst
+sst_hind <- read.csv("./output/hindcasts/temp_surface5m_week_hind_2013-2022_interp_BB.csv", header = F)
 
-names(pH_hind) <- c("year", "month", "pH")
+names(sst_hind) <- c("year", "month", "day", "sst")
 
-ggplot(pH_hind, aes(month, pH)) +
-  geom_line() +
-  geom_point() +
-  facet_wrap(~year) +
-  scale_x_continuous(breaks = 1:12)
 
-ggsave("./figs/pH_hindcasts.png", width = 7.5, height = 6, units = 'in')
-
-# load and plot sst
-sst_hind <- read.csv("./output/hindcasts/temp_surface5m_week_clim_hind_2013-2022_BB.csv", header = F)
-
-names(sst_hind) <- c("day", "sst")
-
-ggplot(sst_hind, aes(day, sst)) +
-  geom_line() +
-  geom_point() +
-  facet_wrap(~year) +
-  scale_x_continuous(breaks = 1:12)
-
-ggsave("./figs/sst_hindcasts.png", width = 7.5, height = 6, units = 'in')
-
-## compare monthly pH distributions for hindcast and projections -----
+## compare monthly pH distributions for hindcast and projections averaged by SSP -----
 
 pH_project <- cmip6_plot %>%
-  filter(variable == "pH",
-         time == "2050-2059") %>%
-  mutate(doy = round(`day of year`)) %>% 
-  group_by(model, doy) %>%
-  summarise(pH = mean(value)) %>%
-  mutate(doy = ymd("2050-01-01") + days(doy - 1),
-         month = month(doy, label = T),
-         group = "CMIP6 2050-59") %>%
-  select(pH, month, group)
+  filter(variable == "bottom_pH") %>%
+  mutate(month = month(month, label = T)) %>%
+  group_by(time, year, month, day, model) %>% # for a given day/month/year/time period/model, average across SSPs
+  select(-variable, -year, -day, -SSP)
 
-# drop 'model' manually
-pH_project <- pH_project[,2:4]
+pH_project <- pH_project[,3:6]  # remove grouping variables by hand
 
-
-pH_hind <- pH_hind %>%
-  mutate(group = "hindcast",
+         
+bottom_pH_hind <- bottom_pH_hind %>%
+  mutate(model = "_hindcast",
+         time = "2050-2059",
          month = month(month, label = T)) %>%
-  select(pH, month, group)
+  rename(value = bottom_pH) %>%
+  select(month, time, model, value)
+
+# and double to include 2090-2099
+bottom_pH_hind2 <- bottom_pH_hind %>%
+  mutate(time = "2090-2099")
+
+bottom_pH_hind <- rbind(bottom_pH_hind, bottom_pH_hind2)
   
 # combine and plot
-pH_pdfs <- rbind(pH_project, pH_hind)
+pH_pdfs <- rbind(pH_project, bottom_pH_hind)
 
-# and get median values by group, month to plot
-pH_medians <- pH_pdfs %>%
-  group_by(group, month) %>%
-  summarise(median = median(pH))
-
-# save monthly hindcast medians for experimental setup
-pH_hindcast_medians <- pH_medians %>%
-  filter(group == "hindcast") 
-
-write.csv(pH_hindcast_medians[,2:3], "./summaries/pH_hindcast_monthly_medians.csv", row.names = F)
-
-
-pH_pdfs <- left_join(pH_pdfs, pH_medians)
-
-ggplot(pH_pdfs, aes(pH, fill = group)) +
+ggplot(filter(pH_pdfs, time == "2050-2059"), aes(value, fill = model)) +
   geom_density(alpha = 0.3, lty = 0) +
   facet_wrap(~month, scales = "free_y") +
-  scale_fill_manual(values = cb[c(2,6)]) +
-  xlim(7.65, 8.07) +
-  ggtitle("CMIP6 values = SSP126, SSP585 means; dashed lines = medians") +
-  geom_vline(aes(xintercept = median, color = group), lty = 2) +
-  scale_color_manual(values = cb[c(2,6)])
+  scale_fill_manual(values = cb[c(1,2,4,6)]) +
+  xlim(7.5, 8.15) +
+  xlab("bottom pH") +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 means") 
 
 
-ggsave("./figs/pH_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+ggsave("./figs/pH_hindcast_projection_monthly_pdfs_by_model.png", width = 10, height = 6, units = 'in')
 
-# plot a version with individual SSPs compared with hindcast
-pH_project_individual_SSPs <- cmip6_plot %>%
-  filter(variable == "pH",
-         time == "2050-2059") %>%
-  mutate(doy = round(`day of year`)) %>% 
-  mutate(doy = ymd("2050-01-01") + days(doy - 1),
-         month = month(doy, label = T)) %>%
-  rename(group = SSP,
-         pH = value) %>%
-  select(pH, month, group)
+# plot the ensemble projection against hindcast
 
+pH_project2 <- cmip6_plot %>%
+  filter(variable == "bottom_pH") %>%
+  mutate(month = month(month, label = T),
+         model = "CMIP6 ensemble") %>%
+  group_by(time, year, month, day) %>% # for a given day/month/year/time period, average across SSPs & models
+  select(-variable, -year, -day, -SSP)
+
+pH_project2 <- pH_project2[,3:6]  # remove grouping variables by hand
 
 # combine and plot
-pH_ssp_pdfs <- rbind(pH_project_individual_SSPs, pH_hind)
+pH_pdfs <- rbind(pH_project2, bottom_pH_hind)
 
-# and get median values by group, month to plot
-pH_ssp_medians <- pH_ssp_pdfs %>%
-  group_by(group, month) %>%
-  summarise(median = median(pH))
 
-pH_ssp_pdfs <- left_join(pH_ssp_pdfs, pH_ssp_medians)
-
-ggplot(pH_ssp_pdfs, aes(pH, fill = group)) +
+ggplot(filter(pH_pdfs, time == "2050-2059"), aes(value, fill = model)) +
   geom_density(alpha = 0.3, lty = 0) +
   facet_wrap(~month, scales = "free_y") +
-  scale_fill_manual(values = cb[c(2,4,6)]) +
-  xlim(7.65, 8.07) +
-  ggtitle("dashed lines = medians") +
-  geom_vline(aes(xintercept = median, color = group), lty = 2) +
-  scale_color_manual(values = cb[c(2,4,6)])
+  scale_fill_manual(values = cb[c(1,2)]) +
+  xlim(7.5, 8.15) +
+  xlab("bottom pH") +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 ensemble means") 
 
-ggsave("./figs/pH_hindcast_projection_monthly_pdfs_individual_SSPs.png", width = 10, height = 6, units = 'in')
 
-## now, advance the hindcast pH climatology by the difference in median between hindcast and projections
+ggsave("./figs/pH_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')
 
-# first, get difference in medians  
-pH_median_diff <- pH_medians %>%
-  pivot_wider(names_from = group, values_from = median) %>%
-  mutate(median_diff = `CMIP6 2050-59` - hindcast)
 
-# now, project entire hindcast climatology by this amount
-pH_projected_10_percentile <- pH_pdfs %>%
-  filter(group == "hindcast") %>%
-  left_join(., pH_median_diff) %>%
-  mutate(pH_projected = pH + median_diff) %>%
-  group_by(month) %>%
-  summarise(tenth_percentile = quantile(pH_projected, 0.1))
+## compare monthly pH distributions for hindcast and projections averaged by SSP -----
 
-# save for setting up experimental conditions  
-write.csv(pH_projected_10_percentile, "./summaries/pH_projected_10th_percentile_2050-59_SSP126_SSP585_mean.csv", row.names = F)
+bottom_temp_project <- cmip6_plot %>%
+  filter(variable == "bottom_temp") %>%
+  mutate(month = month(month, label = T)) %>%
+  group_by(time, year, month, day, model) %>% # for a given day/month/year/time period/model, average across SSPs
+  select(-variable, -year, -day, -SSP)
 
-## compare monthly temp distributions for hindcast and projections -----
+bottom_temp_project <- bottom_temp_project[,3:6]  # remove grouping variables by hand
 
-temp_project <- cmip6_plot %>%
-  filter(variable == "temp",
-         time == "2050-2059") %>%
-  mutate(doy = round(`day of year`)) %>% 
-  group_by(model, doy) %>%
-  summarise(temp = mean(value)) %>%
-  mutate(doy = ymd("2050-01-01") + days(doy - 1),
-         month = month(doy, label = T),
-         group = "CMIP6 2050-59") %>%
-  select(temp, month, group)
 
-# drop 'model' manually
-temp_project <- temp_project[,2:4]
-
-temp_hind <- temp_hind %>%
-  mutate(group = "hindcast",
+bottom_temp_hind <- bottom_temp_hind %>%
+  mutate(model = "_hindcast",
+         time = "2050-2059",
          month = month(month, label = T)) %>%
-  select(temp, month, group)
+  rename(value = bottom_temp) %>%
+  select(month, time, model, value)
+
+# and double to include 2090-2099
+bottom_temp_hind2 <- bottom_temp_hind %>%
+  mutate(time = "2090-2099")
+
+bottom_temp_hind <- rbind(bottom_temp_hind, bottom_temp_hind2)
 
 # combine and plot
-temp_pdfs <- rbind(temp_project, temp_hind)
+bottom_temp_pdfs <- rbind(bottom_temp_project, bottom_temp_hind)
 
-# and get median values by group, month to plot
-temp_medians <- temp_pdfs %>%
-  group_by(group, month) %>%
-  summarise(median = median(temp))
-
-# save monthly hindcast medians for experimental setup
-temp_hindcast_medians <- temp_medians %>%
-  filter(group == "hindcast") 
-
-write.csv(temp_hindcast_medians[,2:3], "./summaries/temp_hindcast_monthly_medians.csv", row.names = F)
-
-temp_pdfs <- left_join(temp_pdfs, temp_medians)
-
-ggplot(temp_pdfs, aes(temp, fill = group)) +
+ggplot(filter(bottom_temp_pdfs, time == "2050-2059"), aes(value, fill = model)) +
   geom_density(alpha = 0.3, lty = 0) +
   facet_wrap(~month, scales = "free_y") +
-  scale_fill_manual(values = cb[c(2,6)]) +
-  xlim(-1, 8) +
-  ggtitle("CMIP6 values = SSP126, SSP585 means; dashed lines = medians") +
-  geom_vline(aes(xintercept = median, color = group), lty = 2) +
-  scale_color_manual(values = cb[c(2,6)])
+  scale_fill_manual(values = cb[c(1,2,4,6)]) +
+  xlim(-3.5, 11) +
+  xlab("bottom temp") +
+  geom_vline(xintercept = -1.8, lty = 2) +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 means; dashed line = -1.8°") 
 
 
-ggsave("./figs/temp_hindcast_projection_monthly_pdfs.png", width = 10, height = 6, units = 'in')
+ggsave("./figs/bottom_temp_hindcast_projection_monthly_pdfs_by_model.png", width = 10, height = 6, units = 'in')
 
-# plot a version with individual SSPs compared with hindcast
-temp_project_individual_SSPs <- cmip6_plot %>%
-  filter(variable == "temp",
-         time == "2050-2059") %>%
-  mutate(doy = round(`day of year`)) %>% 
-  mutate(doy = ymd("2050-01-01") + days(doy - 1),
-         month = month(doy, label = T)) %>%
-  rename(group = SSP,
-         temp = value) %>%
-  select(temp, month, group)
+# plot the ensemble projection against hindcast
 
+bottom_temp_project2 <- cmip6_plot %>%
+  filter(variable == "bottom_temp") %>%
+  mutate(month = month(month, label = T),
+         model = "CMIP6 ensemble") %>%
+  group_by(time, year, month, day) %>% # for a given day/month/year/time period, average across SSPs & models
+  select(-variable, -year, -day, -SSP)
+
+bottom_temp_project2 <- bottom_temp_project2[,3:6]  # remove grouping variables by hand
 
 # combine and plot
-temp_ssp_pdfs <- rbind(temp_project_individual_SSPs, temp_hind)
+bottom_temp_pdfs <- rbind(bottom_temp_project2, bottom_temp_hind)
 
-# and get median values by group, month to plot
-temp_ssp_medians <- temp_ssp_pdfs %>%
-  group_by(group, month) %>%
-  summarise(median = median(temp))
 
-temp_ssp_pdfs <- left_join(temp_ssp_pdfs, temp_ssp_medians)
-
-ggplot(temp_ssp_pdfs, aes(temp, fill = group)) +
+ggplot(filter(bottom_temp_pdfs, time == "2050-2059"), aes(value, fill = model)) +
   geom_density(alpha = 0.3, lty = 0) +
   facet_wrap(~month, scales = "free_y") +
-  scale_fill_manual(values = cb[c(2,4,6)]) +
-  xlim(-1, 8.5) +
-  ggtitle("dashed lines = medians") +
-  geom_vline(aes(xintercept = median, color = group), lty = 2) +
-  scale_color_manual(values = cb[c(2,4,6)])
-
-ggsave("./figs/temp_hindcast_projection_monthly_pdfs_individual_SSPs.png", width = 10, height = 6, units = 'in')
+  scale_fill_manual(values = cb[c(1,2)]) +
+  xlim(-3.5, 11) +
+  xlab("bottom temp") +
+  geom_vline(xintercept = -1.8, lty = 2) +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 ensemble means; dashed line = -1.8°") 
 
 
-## now, advance the hindcast temp climatology by the difference in median between hindcast and projections
+ggsave("./figs/bottom_temp_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')
 
-# first, get difference in medians  
-temp_median_diff <- temp_medians %>%
-  pivot_wider(names_from = group, values_from = median) %>%
-  mutate(median_diff = `CMIP6 2050-59` - hindcast)
+## compare monthly SST distributions for hindcast and projections averaged by SSP -----
 
-# now, project entire hindcast climatology by this amount
-temp_projected_90_percentile <- temp_pdfs %>%
-  filter(group == "hindcast") %>%
-  left_join(., temp_median_diff) %>%
-  mutate(temp_projected = temp + median_diff) %>%
-  group_by(month) %>%
-  summarise(ninetieth_percentile = quantile(temp_projected, 0.9))
+sst_project <- cmip6_plot %>%
+  filter(variable == "sst") %>%
+  mutate(month = month(month, label = T)) %>%
+  group_by(time, year, month, day, model) %>% # for a given day/month/year/time period/model, average across SSPs
+  select(-variable, -year, -day, -SSP)
 
-# save for setting up experimental conditions  
-write.csv(temp_projected_90_percentile, "./summaries/temp_projected_90th_percentile_2050-59_SSP126_SSP585_mean.csv", row.names = F)
+sst_project <- sst_project[,3:6]  # remove grouping variables by hand
+
+
+sst_hind <- sst_hind %>%
+  mutate(model = "_hindcast",
+         time = "2050-2059",
+         month = month(month, label = T)) %>%
+  rename(value = sst) %>%
+  select(month, time, model, value)
+
+# and double to include 2090-2099
+sst_hind2 <- sst_hind %>%
+  mutate(time = "2090-2099")
+
+sst_hind <- rbind(sst_hind, sst_hind2)
+
+# combine and plot
+sst_pdfs <- rbind(sst_project, sst_hind)
+
+ggplot(filter(sst_pdfs, time == "2050-2059"), aes(value, fill = model)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(1,2,4,6)]) +
+  xlim(-5, 20) +
+  xlab("sst") +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 means; dashed line = -1.8°") +
+  geom_vline(xintercept = -1.8, lty = 2)
+
+
+ggsave("./figs/sst_hindcast_projection_monthly_pdfs_by_model.png", width = 10, height = 6, units = 'in')
+
+# plot the ensemble projection against hindcast
+
+sst_project2 <- cmip6_plot %>%
+  filter(variable == "sst") %>%
+  mutate(month = month(month, label = T),
+         model = "CMIP6 ensemble") %>%
+  group_by(time, year, month, day) %>% # for a given day/month/year/time period, average across SSPs & models
+  select(-variable, -year, -day, -SSP)
+
+sst_project2 <- sst_project2[,3:6]  # remove grouping variables by hand
+
+# combine and plot
+temp_pdfs <- rbind(sst_project2, sst_hind)
+
+
+ggplot(filter(temp_pdfs, time == "2050-2059"), aes(value, fill = model)) +
+  geom_density(alpha = 0.3, lty = 0) +
+  facet_wrap(~month, scales = "free_y") +
+  scale_fill_manual(values = cb[c(1,2)]) +
+  xlim(-5, 20) +
+  xlab("sst") +
+  ggtitle("2050-59 projections; CMIP6 values = SSP126, SSP585 means; dashed line = -1.8°") +
+  geom_vline(xintercept = -1.8, lty = 2)
+
+
+ggsave("./figs/sst_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')

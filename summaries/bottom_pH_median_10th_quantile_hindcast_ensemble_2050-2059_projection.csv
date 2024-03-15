@@ -1,0 +1,25 @@
+"month","model","median_pH","tenth_quantile"
+"Jan","CMIP6 ensemble",7.8094,7.68435
+"Jan","_hindcast",7.9271,7.89812
+"Feb","CMIP6 ensemble",7.8466,7.72053
+"Feb","_hindcast",7.945,7.93228
+"Mar","CMIP6 ensemble",7.86695,7.75779
+"Mar","_hindcast",7.9563,7.94326
+"Apr","CMIP6 ensemble",7.87355,7.77015
+"Apr","_hindcast",7.9643,7.95332
+"May","CMIP6 ensemble",7.9092,7.78512
+"May","_hindcast",7.99045,7.96173
+"Jun","CMIP6 ensemble",7.8803,7.76696
+"Jun","_hindcast",7.9773,7.93634
+"Jul","CMIP6 ensemble",7.80265,7.7065
+"Jul","_hindcast",7.9049,7.88322
+"Aug","CMIP6 ensemble",7.7686,7.66266
+"Aug","_hindcast",7.86995,7.84889
+"Sep","CMIP6 ensemble",7.738,7.63187
+"Sep","_hindcast",7.8489,7.81826
+"Oct","CMIP6 ensemble",7.7273,7.61285
+"Oct","_hindcast",7.8464,7.81868
+"Nov","CMIP6 ensemble",7.7506,7.61419
+"Nov","_hindcast",7.8628,7.83756
+"Dec","CMIP6 ensemble",7.77895,7.64299
+"Dec","_hindcast",7.8972,7.86375

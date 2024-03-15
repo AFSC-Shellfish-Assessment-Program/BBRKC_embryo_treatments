@@ -135,8 +135,18 @@ ggplot(filter(pH_pdfs, time == "2050-2059"), aes(value, fill = model)) +
 
 ggsave("./figs/pH_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')
 
+# get medians and 10th quantiles
+pH_stats <- pH_pdfs %>%
+  filter(time == "2050-2059") %>%
+  group_by(month, model) %>%
+  summarise(median_pH = median(value),
+            tenth_quantile = quantile(value, 0.1))
 
-## compare monthly pH distributions for hindcast and projections averaged by SSP -----
+# save
+write.csv(pH_stats, "./summaries/bottom_pH_median_10th_quantile_hindcast_ensemble_2050-2059_projection.csv",
+          row.names = F)
+
+## compare monthly bottom temp distributions for hindcast and projections averaged by SSP -----
 
 bottom_temp_project <- cmip6_plot %>%
   filter(variable == "bottom_temp") %>%
@@ -201,6 +211,20 @@ ggplot(filter(bottom_temp_pdfs, time == "2050-2059"), aes(value, fill = model)) 
 
 
 ggsave("./figs/bottom_temp_hindcast_projection_monthly_pdfs_ensemble.png", width = 10, height = 6, units = 'in')
+
+# get medians and 10th quantiles
+bottom_temp_stats <- bottom_temp_pdfs %>%
+  filter(time == "2050-2059") %>%
+  group_by(month, model) %>%
+  summarise(median_pH = median(value),
+            tenth_quantile = quantile(value, 0.1))
+
+# save
+write.csv(bottom_temp_stats, "./summaries/bottom_temp_median_10th_quantile_hindcast_ensemble_2050-2059_projection.csv",
+          row.names = F)
+
+
+
 
 ## compare monthly SST distributions for hindcast and projections averaged by SSP -----
 
